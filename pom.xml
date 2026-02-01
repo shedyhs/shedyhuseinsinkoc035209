@@ -18,7 +18,7 @@
     <description>API de Artistas e Álbuns</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>25</java.version>
         <minio.version>8.5.7</minio.version>
         <jjwt.version>0.12.5</jjwt.version>
         <springdoc.version>2.8.4</springdoc.version>
@@ -135,7 +135,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <version>0.8.14</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
