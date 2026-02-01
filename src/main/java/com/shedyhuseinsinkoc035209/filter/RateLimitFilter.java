@@ -3,6 +3,7 @@ package com.shedyhuseinsinkoc035209.filter;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -29,13 +31,22 @@ import java.util.concurrent.TimeUnit;
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(RateLimitFilter.class);
-    private static final long EXPIRATION_MILLIS = TimeUnit.MINUTES.toMillis(2);
+
+    @Value("${rate-limit.capacity:10}")
+    private int capacity;
+
+    @Value("${rate-limit.refill-period-minutes:1}")
+    private long refillPeriodMinutes;
+
+    @Value("${rate-limit.expiration-minutes:2}")
+    private long expirationMinutes;
 
     private final ConcurrentHashMap<String, TimestampedBucket> buckets = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    public RateLimitFilter() {
-        scheduler.scheduleAtFixedRate(this::evictExpiredEntries, 1, 1, TimeUnit.MINUTES);
+    @PostConstruct
+    public void init() {
+        scheduler.scheduleAtFixedRate(this::evictExpiredEntries, expirationMinutes, expirationMinutes, TimeUnit.MINUTES);
     }
 
     @Override
@@ -78,13 +89,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private Bucket createBucket() {
-        Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.classic(capacity, Refill.greedy(capacity, Duration.ofMinutes(refillPeriodMinutes)));
         return Bucket.builder().addLimit(limit).build();
     }
 
     private void evictExpiredEntries() {
         long now = System.currentTimeMillis();
-        buckets.entrySet().removeIf(entry -> now - entry.getValue().getLastAccessMillis() > EXPIRATION_MILLIS);
+        long expirationMillis = TimeUnit.MINUTES.toMillis(expirationMinutes);
+        buckets.entrySet().removeIf(entry -> now - entry.getValue().getLastAccessMillis() > expirationMillis);
     }
 
     @PreDestroy
