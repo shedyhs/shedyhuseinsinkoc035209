@@ -34,6 +34,21 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", message);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
+    }
+
+    @ExceptionHandler(InfrastructureException.class)
+    public ResponseEntity<Map<String, Object>> handleInfrastructure(InfrastructureException ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage());
+    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<Map<String, Object>> handleExternalApi(ExternalApiException ex) {
+        return buildResponse(HttpStatus.BAD_GATEWAY, "Bad Gateway", ex.getMessage());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());

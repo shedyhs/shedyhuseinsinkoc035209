@@ -1,5 +1,6 @@
 package com.shedyhuseinsinkoc035209.service;
 
+import com.shedyhuseinsinkoc035209.exception.InfrastructureException;
 import io.minio.BucketExistsArgs;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
@@ -59,7 +60,7 @@ class MinioServiceTest {
         when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenThrow(new RuntimeException("Connection failed"));
 
         assertThatThrownBy(() -> minioService.init())
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(InfrastructureException.class)
                 .hasMessageContaining("Failed to initialize MinIO bucket");
     }
 
@@ -80,7 +81,7 @@ class MinioServiceTest {
         when(minioClient.putObject(any(PutObjectArgs.class))).thenThrow(new RuntimeException("Upload failed"));
 
         assertThatThrownBy(() -> minioService.uploadFile(file))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(InfrastructureException.class)
                 .hasMessageContaining("Failed to upload file to MinIO");
     }
 
@@ -100,7 +101,7 @@ class MinioServiceTest {
                 .thenThrow(new RuntimeException("URL generation failed"));
 
         assertThatThrownBy(() -> minioService.getPresignedUrl("test.jpg"))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(InfrastructureException.class)
                 .hasMessageContaining("Failed to generate presigned URL");
     }
 
@@ -116,7 +117,7 @@ class MinioServiceTest {
         doThrow(new RuntimeException("Delete failed")).when(minioClient).removeObject(any(RemoveObjectArgs.class));
 
         assertThatThrownBy(() -> minioService.deleteFile("test.jpg"))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(InfrastructureException.class)
                 .hasMessageContaining("Failed to delete file from MinIO");
     }
 }

@@ -1,5 +1,6 @@
 package com.shedyhuseinsinkoc035209.service;
 
+import com.shedyhuseinsinkoc035209.exception.InfrastructureException;
 import io.minio.BucketExistsArgs;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
@@ -36,7 +37,7 @@ public class MinioService {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize MinIO bucket: " + e.getMessage(), e);
+            throw new InfrastructureException("Failed to initialize MinIO bucket: " + e.getMessage(), e);
         }
     }
 
@@ -54,7 +55,7 @@ public class MinioService {
 
             return objectKey;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file to MinIO: " + e.getMessage(), e);
+            throw new InfrastructureException("Failed to upload file to MinIO: " + e.getMessage(), e);
         }
     }
 
@@ -67,7 +68,7 @@ public class MinioService {
                     .expiry(30, TimeUnit.MINUTES)
                     .build());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate presigned URL: " + e.getMessage(), e);
+            throw new InfrastructureException("Failed to generate presigned URL: " + e.getMessage(), e);
         }
     }
 
@@ -78,7 +79,7 @@ public class MinioService {
                     .object(objectKey)
                     .build());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete file from MinIO: " + e.getMessage(), e);
+            throw new InfrastructureException("Failed to delete file from MinIO: " + e.getMessage(), e);
         }
     }
 }

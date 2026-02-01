@@ -2,6 +2,7 @@ package com.shedyhuseinsinkoc035209.service;
 
 import com.shedyhuseinsinkoc035209.dto.RegionExternalDto;
 import com.shedyhuseinsinkoc035209.entity.Region;
+import com.shedyhuseinsinkoc035209.exception.ExternalApiException;
 import com.shedyhuseinsinkoc035209.repository.RegionRepository;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class RegionService {
                 .body(new ParameterizedTypeReference<List<RegionExternalDto>>() {});
 
         if (externalRegions == null) {
-            throw new RuntimeException("Failed to fetch regions from external API");
+            throw new ExternalApiException("Failed to fetch regions from external API");
         }
 
         Map<Integer, Region> activeRegionsMap = regionRepository.findByActiveTrue().stream()
