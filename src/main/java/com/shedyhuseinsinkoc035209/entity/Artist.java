@@ -92,47 +92,23 @@ public class Artist {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public ArtistType getType() {
         return type;
     }
 
-    public void setType(ArtistType type) {
-        this.type = type;
-    }
-
     public Set<Album> getAlbums() {
         return albums;
-    }
-
-    public void setAlbums(Set<Album> albums) {
-        this.albums = albums;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

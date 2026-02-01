@@ -3,6 +3,7 @@ package com.shedyhuseinsinkoc035209.service;
 import com.shedyhuseinsinkoc035209.dto.AlbumImageResponse;
 import com.shedyhuseinsinkoc035209.entity.Album;
 import com.shedyhuseinsinkoc035209.entity.AlbumImage;
+import com.shedyhuseinsinkoc035209.exception.ResourceNotFoundException;
 import com.shedyhuseinsinkoc035209.repository.AlbumImageRepository;
 import com.shedyhuseinsinkoc035209.repository.AlbumRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,9 +47,7 @@ class AlbumImageServiceTest {
     @BeforeEach
     void setUp() {
         albumId = UUID.randomUUID();
-        album = new Album();
-        album.setId(albumId);
-        album.setTitle("Test Album");
+        album = new Album(albumId, "Test Album", null);
     }
 
     @Test
@@ -57,13 +57,8 @@ class AlbumImageServiceTest {
         when(minioService.uploadFile(file)).thenReturn("uuid_test.jpg");
         when(minioService.getPresignedUrl("uuid_test.jpg")).thenReturn("http://minio/presigned");
 
-        AlbumImage savedImage = new AlbumImage();
-        savedImage.setId(UUID.randomUUID());
-        savedImage.setAlbum(album);
-        savedImage.setFileName("test.jpg");
-        savedImage.setObjectKey("uuid_test.jpg");
-        savedImage.setContentType("image/jpeg");
-        savedImage.setCreatedAt(LocalDateTime.now());
+        AlbumImage savedImage = new AlbumImage(UUID.randomUUID(), album, "test.jpg", "uuid_test.jpg", "image/jpeg");
+        ReflectionTestUtils.setField(savedImage, "createdAt", LocalDateTime.now());
         when(albumImageRepository.save(any(AlbumImage.class))).thenReturn(savedImage);
 
         List<AlbumImageResponse> responses = albumImageService.uploadImages(albumId, new MockMultipartFile[]{file});
@@ -80,7 +75,7 @@ class AlbumImageServiceTest {
         when(albumRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> albumImageService.uploadImages(invalidId, new MockMultipartFile[]{file}))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Album not found");
     }
 
@@ -88,13 +83,8 @@ class AlbumImageServiceTest {
     void getImagesByAlbumId_shouldReturnImages() {
         when(albumRepository.existsById(albumId)).thenReturn(true);
 
-        AlbumImage image = new AlbumImage();
-        image.setId(UUID.randomUUID());
-        image.setAlbum(album);
-        image.setFileName("test.jpg");
-        image.setObjectKey("uuid_test.jpg");
-        image.setContentType("image/jpeg");
-        image.setCreatedAt(LocalDateTime.now());
+        AlbumImage image = new AlbumImage(UUID.randomUUID(), album, "test.jpg", "uuid_test.jpg", "image/jpeg");
+        ReflectionTestUtils.setField(image, "createdAt", LocalDateTime.now());
         when(albumImageRepository.findByAlbumId(albumId)).thenReturn(List.of(image));
         when(minioService.getPresignedUrl("uuid_test.jpg")).thenReturn("http://minio/presigned");
 
@@ -110,16 +100,14 @@ class AlbumImageServiceTest {
         when(albumRepository.existsById(invalidId)).thenReturn(false);
 
         assertThatThrownBy(() -> albumImageService.getImagesByAlbumId(invalidId))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Album not found");
     }
 
     @Test
     void deleteImage_shouldDeleteFromMinioAndDb() {
         UUID imageId = UUID.randomUUID();
-        AlbumImage image = new AlbumImage();
-        image.setId(imageId);
-        image.setObjectKey("uuid_test.jpg");
+        AlbumImage image = new AlbumImage(imageId, album, "test.jpg", "uuid_test.jpg", "image/jpeg");
         when(albumImageRepository.findById(imageId)).thenReturn(Optional.of(image));
 
         albumImageService.deleteImage(imageId);
@@ -134,7 +122,7 @@ class AlbumImageServiceTest {
         when(albumImageRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> albumImageService.deleteImage(invalidId))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Image not found");
     }
 }
