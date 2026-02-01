@@ -131,6 +131,30 @@ class ArtistControllerTest {
     }
 
     @Test
+    void findByName_shouldReturn200() throws Exception {
+        ArtistResponse response = createArtistResponse();
+        Page<ArtistResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
+        when(artistService.findByName(eq("Test"), eq("asc"), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/v1/artists/search")
+                        .param("name", "Test")
+                        .param("order", "asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("Test Artist"));
+    }
+
+    @Test
+    void findByType_shouldReturn200() throws Exception {
+        ArtistResponse response = createArtistResponse();
+        Page<ArtistResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
+        when(artistService.findByType(eq(ArtistType.SOLO), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/v1/artists/type/{type}", "SOLO"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("Test Artist"));
+    }
+
+    @Test
     void create_shouldReturn400ForInvalidRequest() throws Exception {
         ArtistRequest request = new ArtistRequest("", null);
 
