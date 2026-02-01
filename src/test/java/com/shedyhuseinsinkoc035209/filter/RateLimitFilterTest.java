@@ -9,11 +9,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -102,6 +106,40 @@ class RateLimitFilterTest {
     }
 
     @Test
+    void doFilterInternal_shouldUseIpWhenAnonymousUser() throws Exception {
+        AnonymousAuthenticationToken auth = new AnonymousAuthenticationToken(
+                "key", "anonymousUser",
+                List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("10.0.0.2");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void doFilterInternal_shouldUseIpWhenNotAuthenticated() throws Exception {
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken("user", "pass");
+        auth.setAuthenticated(false);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("10.0.0.3");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
     void doFilterInternal_shouldReturn429WhenRateLimitExceeded() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRemoteAddr("10.0.0.1");
@@ -120,5 +158,59 @@ class RateLimitFilterTest {
         assertThat(response.getContentType()).isEqualTo("application/json");
         assertThat(response.getContentAsString()).contains("Rate limit exceeded");
         verify(filterChain, times(10)).doFilter(any(), any());
+    }
+
+    @Test
+    void init_shouldSetupScheduler() {
+        rateLimitFilter.init();
+        rateLimitFilter.shutdown();
+    }
+
+    @Test
+    void shutdown_shouldStopScheduler() {
+        rateLimitFilter.init();
+        rateLimitFilter.shutdown();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void evictExpiredEntries_shouldRemoveExpiredBuckets() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("192.168.1.100");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+
+        ConcurrentHashMap<String, ?> buckets =
+                (ConcurrentHashMap<String, ?>) ReflectionTestUtils.getField(rateLimitFilter, "buckets");
+        assertThat(buckets).isNotEmpty();
+
+        // Set lastAccessMillis to a past time to simulate expiration
+        Object timestampedBucket = buckets.get("192.168.1.100");
+        ReflectionTestUtils.setField(timestampedBucket, "lastAccessMillis", 0L);
+
+        Method evict = RateLimitFilter.class.getDeclaredMethod("evictExpiredEntries");
+        evict.setAccessible(true);
+        evict.invoke(rateLimitFilter);
+
+        assertThat(buckets).isEmpty();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void evictExpiredEntries_shouldKeepNonExpiredBuckets() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("192.168.1.200");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+
+        ConcurrentHashMap<String, ?> buckets =
+                (ConcurrentHashMap<String, ?>) ReflectionTestUtils.getField(rateLimitFilter, "buckets");
+        assertThat(buckets).isNotEmpty();
+
+        Method evict = RateLimitFilter.class.getDeclaredMethod("evictExpiredEntries");
+        evict.setAccessible(true);
+        evict.invoke(rateLimitFilter);
+
+        assertThat(buckets).isNotEmpty();
     }
 }

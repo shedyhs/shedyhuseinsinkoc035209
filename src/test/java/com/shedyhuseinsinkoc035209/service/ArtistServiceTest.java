@@ -94,12 +94,23 @@ class ArtistServiceTest {
     }
 
     @Test
-    void findByName_shouldReturnFilteredArtists() {
+    void findByName_withAscOrder_shouldReturnFilteredArtists() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Artist> page = new PageImpl<>(List.of(artist));
         when(artistRepository.findByNameContainingIgnoreCase(any(String.class), any(Pageable.class))).thenReturn(page);
 
         Page<ArtistResponse> response = artistService.findByName("Test", "asc", pageable);
+
+        assertThat(response.getContent()).hasSize(1);
+    }
+
+    @Test
+    void findByName_withDescOrder_shouldReturnFilteredArtists() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Artist> page = new PageImpl<>(List.of(artist));
+        when(artistRepository.findByNameContainingIgnoreCase(any(String.class), any(Pageable.class))).thenReturn(page);
+
+        Page<ArtistResponse> response = artistService.findByName("Test", "desc", pageable);
 
         assertThat(response.getContent()).hasSize(1);
     }
@@ -113,6 +124,17 @@ class ArtistServiceTest {
         Page<ArtistResponse> response = artistService.findByType(ArtistType.SOLO, pageable);
 
         assertThat(response.getContent()).hasSize(1);
+    }
+
+    @Test
+    void update_shouldThrowWhenNotFound() {
+        UUID id = UUID.randomUUID();
+        ArtistRequest request = new ArtistRequest("Updated", ArtistType.BAND);
+        when(artistRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> artistService.update(id, request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Artist not found");
     }
 
     @Test
