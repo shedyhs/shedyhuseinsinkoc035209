@@ -1,6 +1,5 @@
 package com.shedyhuseinsinkoc035209.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shedyhuseinsinkoc035209.dto.AlbumImageResponse;
 import com.shedyhuseinsinkoc035209.service.AlbumImageService;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -33,8 +32,6 @@ class AlbumImageControllerTest {
 
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-
     @Mock
     private AlbumImageService albumImageService;
 
@@ -43,11 +40,8 @@ class AlbumImageControllerTest {
 
     @BeforeEach
     void setUp() {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.setObjectMapper(objectMapper);
-
         mockMvc = MockMvcBuilders.standaloneSetup(albumImageController)
-                .setMessageConverters(converter)
+                .setMessageConverters(new JacksonJsonHttpMessageConverter())
                 .build();
     }
 
