@@ -9,7 +9,7 @@
 
 ## Tecnologias Utilizadas
 
-- **Java 17** com **Spring Boot 4.1.0-M1**
+- **Java 25** com **Spring Boot 4.1.0-M1**
 - **Spring Security** com JWT (jjwt 0.12.5)
 - **Spring Data JPA** com PostgreSQL
 - **Flyway** para migrações versionadas do banco de dados
