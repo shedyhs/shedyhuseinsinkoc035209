@@ -83,4 +83,18 @@ class JwtUtilTest {
 
         assertThat(expiration).isAfter(new Date());
     }
+
+    @Test
+    void isRefreshToken_shouldReturnTrueForRefreshToken() {
+        String token = jwtUtil.generateRefreshToken("admin");
+
+        assertThat(jwtUtil.isRefreshToken(token)).isTrue();
+    }
+
+    @Test
+    void isRefreshToken_shouldReturnFalseForAccessToken() {
+        String token = jwtUtil.generateToken("admin");
+
+        assertThat(jwtUtil.isRefreshToken(token)).isFalse();
+    }
 }
