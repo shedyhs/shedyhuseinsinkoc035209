@@ -1,0 +1,5 @@
+CREATE TABLE regions (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE
+);
