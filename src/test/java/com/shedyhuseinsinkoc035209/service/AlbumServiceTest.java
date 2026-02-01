@@ -133,6 +133,49 @@ class AlbumServiceTest {
     }
 
     @Test
+    void findByArtistName_withAscOrder_shouldReturnSortedAlbums() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Album> page = new PageImpl<>(List.of(album));
+        when(albumRepository.findByArtistNameContaining(eq("Test"), any(Pageable.class))).thenReturn(page);
+
+        Page<AlbumResponse> response = albumService.findByArtistName("Test", "asc", pageable);
+
+        assertThat(response.getContent()).hasSize(1);
+    }
+
+    @Test
+    void findByArtistName_withDescOrder_shouldReturnSortedAlbums() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Album> page = new PageImpl<>(List.of(album));
+        when(albumRepository.findByArtistNameContaining(eq("Test"), any(Pageable.class))).thenReturn(page);
+
+        Page<AlbumResponse> response = albumService.findByArtistName("Test", "desc", pageable);
+
+        assertThat(response.getContent()).hasSize(1);
+    }
+
+    @Test
+    void update_shouldThrowWhenAlbumNotFound() {
+        UUID id = UUID.randomUUID();
+        AlbumRequest request = new AlbumRequest("Updated", 2024, Set.of(artistId));
+        when(albumRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> albumService.update(id, request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Album not found");
+    }
+
+    @Test
+    void delete_shouldThrowWhenAlbumNotFound() {
+        UUID id = UUID.randomUUID();
+        when(albumRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> albumService.delete(id))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Album not found");
+    }
+
+    @Test
     void update_shouldReturnUpdatedAlbum() {
         AlbumRequest request = new AlbumRequest("Updated Album", 2024, Set.of(artistId));
         when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
