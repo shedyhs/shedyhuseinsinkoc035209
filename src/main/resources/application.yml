@@ -26,6 +26,11 @@ minio:
   secret-key: ${MINIO_SECRET_KEY:minioadmin}
   bucket: ${MINIO_BUCKET:album-images}
 
+region:
+  external:
+    api:
+      url: ${REGION_EXTERNAL_API_URL:https://integrador-argus-api.geia.vip/v1/regionais}
+
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8080}
 

@@ -5,6 +5,7 @@ import com.shedyhuseinsinkoc035209.dto.AlbumResponse;
 import com.shedyhuseinsinkoc035209.entity.Album;
 import com.shedyhuseinsinkoc035209.entity.Artist;
 import com.shedyhuseinsinkoc035209.entity.ArtistType;
+import com.shedyhuseinsinkoc035209.exception.ResourceNotFoundException;
 import com.shedyhuseinsinkoc035209.repository.AlbumRepository;
 import com.shedyhuseinsinkoc035209.repository.ArtistRepository;
 import org.springframework.data.domain.Page;
@@ -37,7 +38,7 @@ public class AlbumService {
 
         for (UUID artistId : request.getArtistIds()) {
             Artist artist = artistRepository.findById(artistId)
-                    .orElseThrow(() -> new RuntimeException("Artist not found with id: " + artistId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + artistId));
             album.addArtist(artist);
         }
 
@@ -50,7 +51,7 @@ public class AlbumService {
 
     public AlbumResponse findById(UUID id) {
         Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found with id: " + id));
         return AlbumResponse.fromEntity(album);
     }
 
@@ -75,14 +76,14 @@ public class AlbumService {
     @Transactional
     public AlbumResponse update(UUID id, AlbumRequest request) {
         Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found with id: " + id));
 
         album.update(request.getTitle(), request.getReleaseYear());
         album.clearArtists();
 
         for (UUID artistId : request.getArtistIds()) {
             Artist artist = artistRepository.findById(artistId)
-                    .orElseThrow(() -> new RuntimeException("Artist not found with id: " + artistId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + artistId));
             album.addArtist(artist);
         }
 
@@ -93,7 +94,7 @@ public class AlbumService {
     @Transactional
     public void delete(UUID id) {
         Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found with id: " + id));
 
         album.clearArtists();
         albumRepository.delete(album);
