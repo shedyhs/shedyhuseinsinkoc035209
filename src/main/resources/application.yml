@@ -52,3 +52,11 @@ management:
       probes:
         enabled: true
       show-details: always
+      show-components: always
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    db:
+      enabled: true
