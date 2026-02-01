@@ -23,23 +23,29 @@ public class JwtUtil {
     private Long refreshExpiration;
 
     public String generateToken(String username) {
-        return buildToken(username, expiration);
+        return buildToken(username, expiration, "access");
     }
 
     public String generateRefreshToken(String username) {
-        return buildToken(username, refreshExpiration);
+        return buildToken(username, refreshExpiration, "refresh");
     }
 
-    private String buildToken(String username, Long expirationTime) {
+    private String buildToken(String username, Long expirationTime, String tokenType) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
 
         return Jwts.builder()
                 .subject(username)
+                .claim("type", tokenType)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public boolean isRefreshToken(String token) {
+        String type = extractClaims(token).get("type", String.class);
+        return "refresh".equals(type);
     }
 
     public boolean validateToken(String token) {
