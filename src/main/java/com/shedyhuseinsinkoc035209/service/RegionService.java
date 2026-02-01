@@ -4,6 +4,8 @@ import com.shedyhuseinsinkoc035209.client.RegionExternalClient;
 import com.shedyhuseinsinkoc035209.dto.RegionExternalDto;
 import com.shedyhuseinsinkoc035209.entity.Region;
 import com.shedyhuseinsinkoc035209.repository.RegionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class RegionService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RegionService.class);
 
     private final RegionRepository regionRepository;
     private final RegionExternalClient regionExternalClient;
@@ -33,6 +37,7 @@ public class RegionService {
 
     @Transactional
     public List<Region> synchronize() {
+        LOG.info("Synchronizing regions with external API");
         List<RegionExternalDto> externalRegions = regionExternalClient.fetchRegions();
 
         Map<Integer, Region> activeRegionsMap = regionRepository.findByActiveTrue().stream()
@@ -69,6 +74,8 @@ public class RegionService {
             }
         }
 
-        return regionRepository.findByActiveTrue();
+        List<Region> activeRegions = regionRepository.findByActiveTrue();
+        LOG.info("Region synchronization completed. Active regions: {}", activeRegions.size());
+        return activeRegions;
     }
 }
