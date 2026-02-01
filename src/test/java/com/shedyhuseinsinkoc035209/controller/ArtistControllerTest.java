@@ -18,7 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -53,12 +53,9 @@ class ArtistControllerTest {
 
     @BeforeEach
     void setUp() {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.setObjectMapper(objectMapper);
-
         mockMvc = MockMvcBuilders.standaloneSetup(artistController)
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
-                .setMessageConverters(converter)
+                .setMessageConverters(new JacksonJsonHttpMessageConverter())
                 .build();
     }
 
