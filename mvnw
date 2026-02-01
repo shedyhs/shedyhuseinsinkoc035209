@@ -78,6 +78,7 @@ if [ -f "$WRAPPER_JAR" ]; then
   exec "$JAVACMD" \
     $MAVEN_OPTS \
     $MAVEN_DEBUG_OPTS \
+    -Dmaven.multiModuleProjectDirectory="$MAVEN_PROJECTBASEDIR" \
     -classpath "$WRAPPER_JAR" \
     org.apache.maven.wrapper.MavenWrapperMain "$@"
 else
