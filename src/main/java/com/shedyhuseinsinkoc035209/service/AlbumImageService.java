@@ -3,6 +3,7 @@ package com.shedyhuseinsinkoc035209.service;
 import com.shedyhuseinsinkoc035209.dto.AlbumImageResponse;
 import com.shedyhuseinsinkoc035209.entity.Album;
 import com.shedyhuseinsinkoc035209.entity.AlbumImage;
+import com.shedyhuseinsinkoc035209.exception.ResourceNotFoundException;
 import com.shedyhuseinsinkoc035209.repository.AlbumImageRepository;
 import com.shedyhuseinsinkoc035209.repository.AlbumRepository;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class AlbumImageService {
     @Transactional
     public List<AlbumImageResponse> uploadImages(UUID albumId, MultipartFile[] files) {
         Album album = albumRepository.findById(albumId)
-                .orElseThrow(() -> new RuntimeException("Album not found with id: " + albumId));
+                .orElseThrow(() -> new ResourceNotFoundException("Album not found with id: " + albumId));
 
         List<AlbumImageResponse> responses = new ArrayList<>();
 
@@ -57,7 +58,7 @@ public class AlbumImageService {
 
     public List<AlbumImageResponse> getImagesByAlbumId(UUID albumId) {
         if (!albumRepository.existsById(albumId)) {
-            throw new RuntimeException("Album not found with id: " + albumId);
+            throw new ResourceNotFoundException("Album not found with id: " + albumId);
         }
 
         List<AlbumImage> images = albumImageRepository.findByAlbumId(albumId);
@@ -81,7 +82,7 @@ public class AlbumImageService {
     @Transactional
     public void deleteImage(UUID imageId) {
         AlbumImage image = albumImageRepository.findById(imageId)
-                .orElseThrow(() -> new RuntimeException("Image not found with id: " + imageId));
+                .orElseThrow(() -> new ResourceNotFoundException("Image not found with id: " + imageId));
 
         minioService.deleteFile(image.getObjectKey());
         albumImageRepository.delete(image);

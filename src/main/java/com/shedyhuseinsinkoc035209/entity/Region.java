@@ -37,32 +37,16 @@ public class Region {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Integer getExternalId() {
         return externalId;
-    }
-
-    public void setExternalId(Integer externalId) {
-        this.externalId = externalId;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Boolean getActive() {
         return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
     }
 
     public void deactivate() {

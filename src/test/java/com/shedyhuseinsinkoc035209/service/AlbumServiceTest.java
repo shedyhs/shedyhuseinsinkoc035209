@@ -5,6 +5,7 @@ import com.shedyhuseinsinkoc035209.dto.AlbumResponse;
 import com.shedyhuseinsinkoc035209.entity.Album;
 import com.shedyhuseinsinkoc035209.entity.Artist;
 import com.shedyhuseinsinkoc035209.entity.ArtistType;
+import com.shedyhuseinsinkoc035209.exception.ResourceNotFoundException;
 import com.shedyhuseinsinkoc035209.repository.AlbumRepository;
 import com.shedyhuseinsinkoc035209.repository.ArtistRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,9 +19,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,19 +59,12 @@ class AlbumServiceTest {
         albumId = UUID.randomUUID();
         artistId = UUID.randomUUID();
 
-        artist = new Artist();
-        artist.setId(artistId);
-        artist.setName("Test Artist");
-        artist.setType(ArtistType.SOLO);
-        artist.setAlbums(new HashSet<>());
+        artist = new Artist(artistId, "Test Artist", ArtistType.SOLO);
 
-        album = new Album();
-        album.setId(albumId);
-        album.setTitle("Test Album");
-        album.setReleaseYear(2023);
-        album.setArtists(new HashSet<>(Set.of(artist)));
-        album.setCreatedAt(LocalDateTime.now());
-        album.setUpdatedAt(LocalDateTime.now());
+        album = new Album(albumId, "Test Album", 2023);
+        album.getArtists().add(artist);
+        ReflectionTestUtils.setField(album, "createdAt", LocalDateTime.now());
+        ReflectionTestUtils.setField(album, "updatedAt", LocalDateTime.now());
     }
 
     @Test
@@ -92,7 +86,7 @@ class AlbumServiceTest {
         when(artistRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> albumService.create(request))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Artist not found");
     }
 
@@ -112,7 +106,7 @@ class AlbumServiceTest {
         when(albumRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> albumService.findById(id))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Album not found");
     }
 
