@@ -44,23 +44,23 @@ public class RegionService {
                 .collect(Collectors.toMap(Region::getExternalId, r -> r));
 
         Set<Integer> externalIds = externalRegions.stream()
-                .map(RegionExternalDto::getId)
+                .map(RegionExternalDto::id)
                 .collect(Collectors.toSet());
 
         // Process external regions
         for (RegionExternalDto dto : externalRegions) {
-            Region existing = activeRegionsMap.get(dto.getId());
+            Region existing = activeRegionsMap.get(dto.id());
 
             if (existing == null) {
                 // New region - insert
-                Region newRegion = new Region(dto.getId(), dto.getNome(), true);
+                Region newRegion = new Region(dto.id(), dto.nome(), true);
                 regionRepository.save(newRegion);
-            } else if (existing.hasNameChanged(dto.getNome())) {
+            } else if (existing.hasNameChanged(dto.nome())) {
                 // Name changed - deactivate old and insert new (different surrogate PKs)
                 existing.deactivate();
                 regionRepository.save(existing);
 
-                Region updated = new Region(dto.getId(), dto.getNome(), true);
+                Region updated = new Region(dto.id(), dto.nome(), true);
                 regionRepository.save(updated);
             }
         }

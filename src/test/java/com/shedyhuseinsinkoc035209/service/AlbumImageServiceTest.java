@@ -64,8 +64,8 @@ class AlbumImageServiceTest {
         List<AlbumImageResponse> responses = albumImageService.uploadImages(albumId, new MockMultipartFile[]{file});
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).getFileName()).isEqualTo("test.jpg");
-        assertThat(responses.get(0).getUrl()).isEqualTo("http://minio/presigned");
+        assertThat(responses.get(0).fileName()).isEqualTo("test.jpg");
+        assertThat(responses.get(0).url()).isEqualTo("http://minio/presigned");
     }
 
     @Test
@@ -91,7 +91,7 @@ class AlbumImageServiceTest {
         List<AlbumImageResponse> responses = albumImageService.getImagesByAlbumId(albumId);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).getFileName()).isEqualTo("test.jpg");
+        assertThat(responses.get(0).fileName()).isEqualTo("test.jpg");
     }
 
     @Test

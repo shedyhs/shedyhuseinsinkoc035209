@@ -43,14 +43,7 @@ public class AlbumImageService {
             AlbumImage saved = albumImageRepository.save(image);
             String presignedUrl = minioService.getPresignedUrl(objectKey);
 
-            responses.add(new AlbumImageResponse(
-                    saved.getId(),
-                    albumId,
-                    saved.getFileName(),
-                    saved.getContentType(),
-                    presignedUrl,
-                    saved.getCreatedAt()
-            ));
+            responses.add(AlbumImageResponse.fromEntity(saved, albumId, presignedUrl));
         }
 
         return responses;
@@ -66,14 +59,7 @@ public class AlbumImageService {
 
         for (AlbumImage image : images) {
             String presignedUrl = minioService.getPresignedUrl(image.getObjectKey());
-            responses.add(new AlbumImageResponse(
-                    image.getId(),
-                    albumId,
-                    image.getFileName(),
-                    image.getContentType(),
-                    presignedUrl,
-                    image.getCreatedAt()
-            ));
+            responses.add(AlbumImageResponse.fromEntity(image, albumId, presignedUrl));
         }
 
         return responses;

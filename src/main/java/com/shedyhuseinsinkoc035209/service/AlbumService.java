@@ -39,15 +39,15 @@ public class AlbumService {
 
     @Transactional
     public AlbumResponse create(AlbumRequest request) {
-        Album album = new Album(request.getTitle(), request.getReleaseYear());
+        Album album = new Album(request.title(), request.releaseYear());
 
-        addArtistsToAlbum(album, request.getArtistIds());
+        addArtistsToAlbum(album, request.artistIds());
 
         Album saved = albumRepository.save(album);
 
         AlbumResponse response = AlbumResponse.fromEntity(saved);
         messagingTemplate.convertAndSend("/topic/albums", response);
-        LOG.info("Album '{}' created with {} artists", request.getTitle(), request.getArtistIds().size());
+        LOG.info("Album '{}' created with {} artists", request.title(), request.artistIds().size());
         return response;
     }
 
@@ -80,10 +80,10 @@ public class AlbumService {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Album not found with id: " + id));
 
-        album.update(request.getTitle(), request.getReleaseYear());
+        album.update(request.title(), request.releaseYear());
         album.clearArtists();
 
-        addArtistsToAlbum(album, request.getArtistIds());
+        addArtistsToAlbum(album, request.artistIds());
 
         Album updated = albumRepository.save(album);
         LOG.info("Album '{}' updated", id);

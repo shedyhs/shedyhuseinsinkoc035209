@@ -26,7 +26,7 @@ public class ArtistService {
 
     @Transactional
     public ArtistResponse create(ArtistRequest request) {
-        Artist artist = new Artist(request.getName(), request.getType());
+        Artist artist = new Artist(request.name(), request.type());
         Artist saved = artistRepository.save(artist);
         return ArtistResponse.fromEntity(saved);
     }
@@ -64,7 +64,7 @@ public class ArtistService {
     public ArtistResponse update(UUID id, ArtistRequest request) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + id));
-        artist.update(request.getName(), request.getType());
+        artist.update(request.name(), request.type());
         Artist updated = artistRepository.save(artist);
         return ArtistResponse.fromEntity(updated);
     }
