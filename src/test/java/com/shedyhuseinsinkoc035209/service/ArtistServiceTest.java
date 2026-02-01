@@ -4,6 +4,7 @@ import com.shedyhuseinsinkoc035209.dto.ArtistRequest;
 import com.shedyhuseinsinkoc035209.dto.ArtistResponse;
 import com.shedyhuseinsinkoc035209.entity.Artist;
 import com.shedyhuseinsinkoc035209.entity.ArtistType;
+import com.shedyhuseinsinkoc035209.exception.ResourceNotFoundException;
 import com.shedyhuseinsinkoc035209.repository.ArtistRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,12 +44,9 @@ class ArtistServiceTest {
     @BeforeEach
     void setUp() {
         artistId = UUID.randomUUID();
-        artist = new Artist();
-        artist.setId(artistId);
-        artist.setName("Test Artist");
-        artist.setType(ArtistType.SOLO);
-        artist.setCreatedAt(LocalDateTime.now());
-        artist.setUpdatedAt(LocalDateTime.now());
+        artist = new Artist(artistId, "Test Artist", ArtistType.SOLO);
+        ReflectionTestUtils.setField(artist, "createdAt", LocalDateTime.now());
+        ReflectionTestUtils.setField(artist, "updatedAt", LocalDateTime.now());
     }
 
     @Test
@@ -78,7 +77,7 @@ class ArtistServiceTest {
         when(artistRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> artistService.findById(id))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Artist not found");
     }
 
@@ -143,7 +142,7 @@ class ArtistServiceTest {
         when(artistRepository.existsById(id)).thenReturn(false);
 
         assertThatThrownBy(() -> artistService.delete(id))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Artist not found");
     }
 }

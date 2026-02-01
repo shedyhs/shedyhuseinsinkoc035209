@@ -4,6 +4,7 @@ import com.shedyhuseinsinkoc035209.dto.ArtistRequest;
 import com.shedyhuseinsinkoc035209.dto.ArtistResponse;
 import com.shedyhuseinsinkoc035209.entity.Artist;
 import com.shedyhuseinsinkoc035209.entity.ArtistType;
+import com.shedyhuseinsinkoc035209.exception.ResourceNotFoundException;
 import com.shedyhuseinsinkoc035209.repository.ArtistRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +33,7 @@ public class ArtistService {
 
     public ArtistResponse findById(UUID id) {
         Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Artist not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + id));
         return ArtistResponse.fromEntity(artist);
     }
 
@@ -62,7 +63,7 @@ public class ArtistService {
     @Transactional
     public ArtistResponse update(UUID id, ArtistRequest request) {
         Artist artist = artistRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Artist not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + id));
         artist.update(request.getName(), request.getType());
         Artist updated = artistRepository.save(artist);
         return ArtistResponse.fromEntity(updated);
@@ -71,7 +72,7 @@ public class ArtistService {
     @Transactional
     public void delete(UUID id) {
         if (!artistRepository.existsById(id)) {
-            throw new RuntimeException("Artist not found with id: " + id);
+            throw new ResourceNotFoundException("Artist not found with id: " + id);
         }
         artistRepository.deleteById(id);
     }

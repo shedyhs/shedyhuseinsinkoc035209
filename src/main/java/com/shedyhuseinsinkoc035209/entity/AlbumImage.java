@@ -66,47 +66,23 @@ public class AlbumImage {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public Album getAlbum() {
         return album;
-    }
-
-    public void setAlbum(Album album) {
-        this.album = album;
     }
 
     public String getFileName() {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
     public String getObjectKey() {
         return objectKey;
-    }
-
-    public void setObjectKey(String objectKey) {
-        this.objectKey = objectKey;
     }
 
     public String getContentType() {
         return contentType;
     }
 
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }
