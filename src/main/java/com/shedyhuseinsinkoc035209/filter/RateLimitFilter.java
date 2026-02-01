@@ -1,8 +1,6 @@
 package com.shedyhuseinsinkoc035209.filter;
 
-import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.FilterChain;
@@ -89,8 +87,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private Bucket createBucket() {
-        Bandwidth limit = Bandwidth.classic(capacity, Refill.greedy(capacity, Duration.ofMinutes(refillPeriodMinutes)));
-        return Bucket.builder().addLimit(limit).build();
+        return Bucket.builder()
+                .addLimit(limit -> limit.capacity(capacity)
+                        .refillGreedy(capacity, Duration.ofMinutes(refillPeriodMinutes)))
+                .build();
     }
 
     private void evictExpiredEntries() {
