@@ -1,0 +1,5 @@
+INSERT INTO artists (id, name, type) VALUES
+    ('a1111111-1111-1111-1111-111111111111', 'Serj Tankian', 'SOLO'),
+    ('a2222222-2222-2222-2222-222222222222', 'Mike Shinoda', 'SOLO'),
+    ('a3333333-3333-3333-3333-333333333333', 'Michel Teló', 'SOLO'),
+    ('a4444444-4444-4444-4444-444444444444', 'Guns N'' Roses', 'BAND');
