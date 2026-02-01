@@ -75,7 +75,7 @@ class AlbumServiceTest {
 
         AlbumResponse response = albumService.create(request);
 
-        assertThat(response.getTitle()).isEqualTo("Test Album");
+        assertThat(response.title()).isEqualTo("Test Album");
         verify(messagingTemplate).convertAndSend(eq("/topic/albums"), any(AlbumResponse.class));
     }
 
@@ -96,8 +96,8 @@ class AlbumServiceTest {
 
         AlbumResponse response = albumService.findById(albumId);
 
-        assertThat(response.getId()).isEqualTo(albumId);
-        assertThat(response.getTitle()).isEqualTo("Test Album");
+        assertThat(response.id()).isEqualTo(albumId);
+        assertThat(response.title()).isEqualTo("Test Album");
     }
 
     @Test

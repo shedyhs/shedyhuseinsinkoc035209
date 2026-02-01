@@ -90,7 +90,7 @@ class ArtistControllerTest {
         ArtistResponse response = createArtistResponse();
         when(artistService.findById(any(UUID.class))).thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/artists/{id}", response.getId()))
+        mockMvc.perform(get("/api/v1/artists/{id}", response.id()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Test Artist"));
     }
