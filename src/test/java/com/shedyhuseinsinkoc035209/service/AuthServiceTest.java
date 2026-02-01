@@ -45,10 +45,10 @@ class AuthServiceTest {
 
         LoginResponse response = authService.login(request);
 
-        assertThat(response.getAccessToken()).isEqualTo("access-token");
-        assertThat(response.getRefreshToken()).isEqualTo("refresh-token");
-        assertThat(response.getTokenType()).isEqualTo("Bearer");
-        assertThat(response.getExpiresIn()).isEqualTo(3600000L);
+        assertThat(response.accessToken()).isEqualTo("access-token");
+        assertThat(response.refreshToken()).isEqualTo("refresh-token");
+        assertThat(response.tokenType()).isEqualTo("Bearer");
+        assertThat(response.expiresIn()).isEqualTo(3600000L);
     }
 
     @Test
@@ -72,8 +72,8 @@ class AuthServiceTest {
 
         LoginResponse response = authService.refresh(request);
 
-        assertThat(response.getAccessToken()).isEqualTo("new-access-token");
-        assertThat(response.getRefreshToken()).isEqualTo("valid-refresh-token");
+        assertThat(response.accessToken()).isEqualTo("new-access-token");
+        assertThat(response.refreshToken()).isEqualTo("valid-refresh-token");
     }
 
     @Test

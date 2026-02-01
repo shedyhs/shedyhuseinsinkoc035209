@@ -90,7 +90,7 @@ class AlbumControllerTest {
         AlbumResponse response = createAlbumResponse();
         when(albumService.findById(any(UUID.class))).thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/albums/{id}", response.getId()))
+        mockMvc.perform(get("/api/v1/albums/{id}", response.id()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Test Album"));
     }

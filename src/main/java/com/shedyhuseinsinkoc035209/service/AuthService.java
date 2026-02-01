@@ -27,7 +27,7 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
         String username = authentication.getName();
@@ -39,7 +39,7 @@ public class AuthService {
     }
 
     public LoginResponse refresh(RefreshRequest request) {
-        String refreshToken = request.getRefreshToken();
+        String refreshToken = request.refreshToken();
 
         if (!jwtUtil.validateToken(refreshToken)) {
             LOG.warn("Invalid refresh token attempt");
