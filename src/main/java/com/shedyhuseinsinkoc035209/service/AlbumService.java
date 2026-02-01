@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +22,13 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public AlbumService(AlbumRepository albumRepository, ArtistRepository artistRepository) {
+    public AlbumService(AlbumRepository albumRepository, ArtistRepository artistRepository,
+                       SimpMessagingTemplate messagingTemplate) {
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
