@@ -10,7 +10,7 @@ if command -v mvn &> /dev/null && java -version &> /dev/null; then
 elif [ -f "./mvnw" ] && java -version &> /dev/null; then
     MVN="./mvnw"
 else
-    MVN="docker run --rm -v $(pwd):/app -w /app maven:3.9.9-eclipse-temurin-17 mvn"
+    MVN="docker run --rm -v $(pwd):/app -w /app maven:3.9.9-eclipse-temurin-25 mvn"
 fi
 
 echo ""
