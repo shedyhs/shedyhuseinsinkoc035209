@@ -1,13 +1,11 @@
 package com.shedyhuseinsinkoc035209.service;
 
+import com.shedyhuseinsinkoc035209.client.RegionExternalClient;
 import com.shedyhuseinsinkoc035209.dto.RegionExternalDto;
 import com.shedyhuseinsinkoc035209.entity.Region;
-import com.shedyhuseinsinkoc035209.exception.ExternalApiException;
 import com.shedyhuseinsinkoc035209.repository.RegionRepository;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Map;
@@ -18,13 +16,11 @@ import java.util.stream.Collectors;
 public class RegionService {
 
     private final RegionRepository regionRepository;
-    private final RestClient restClient;
+    private final RegionExternalClient regionExternalClient;
 
-    private static final String EXTERNAL_API_URL = "https://integrador-argus-api.geia.vip/v1/regionais";
-
-    public RegionService(RegionRepository regionRepository) {
+    public RegionService(RegionRepository regionRepository, RegionExternalClient regionExternalClient) {
         this.regionRepository = regionRepository;
-        this.restClient = RestClient.create();
+        this.regionExternalClient = regionExternalClient;
     }
 
     public List<Region> findAll() {
@@ -37,14 +33,7 @@ public class RegionService {
 
     @Transactional
     public List<Region> synchronize() {
-        List<RegionExternalDto> externalRegions = restClient.get()
-                .uri(EXTERNAL_API_URL)
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<RegionExternalDto>>() {});
-
-        if (externalRegions == null) {
-            throw new ExternalApiException("Failed to fetch regions from external API");
-        }
+        List<RegionExternalDto> externalRegions = regionExternalClient.fetchRegions();
 
         Map<Integer, Region> activeRegionsMap = regionRepository.findByActiveTrue().stream()
                 .collect(Collectors.toMap(Region::getExternalId, r -> r));
