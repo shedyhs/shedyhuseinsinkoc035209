@@ -3,10 +3,13 @@ package com.shedyhuseinsinkoc035209.filter;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
+import jakarta.annotation.PreDestroy;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -18,11 +21,22 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private static final Logger LOG = LoggerFactory.getLogger(RateLimitFilter.class);
+    private static final long EXPIRATION_MILLIS = TimeUnit.MINUTES.toMillis(2);
+
+    private final ConcurrentHashMap<String, TimestampedBucket> buckets = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+    public RateLimitFilter() {
+        scheduler.scheduleAtFixedRate(this::evictExpiredEntries, 1, 1, TimeUnit.MINUTES);
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -36,15 +50,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String key = resolveKey(request);
-        Bucket bucket = buckets.computeIfAbsent(key, k -> createBucket());
+        TimestampedBucket timestamped = buckets.computeIfAbsent(key, k -> new TimestampedBucket(createBucket()));
+        timestamped.touch();
 
-        if (bucket.tryConsume(1)) {
+        if (timestamped.getBucket().tryConsume(1)) {
             filterChain.doFilter(request, response);
         } else {
+            LOG.warn("Rate limit exceeded for key '{}'", key);
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             String body = String.format(
-                    "{\"timestamp\":\"%s\",\"status\":429,\"error\":\"Too Many Requests\",\"message\":\"Rate limit exceeded. Try again later.\"}",
+                    "{\"timestamp\":\"%s\",\"status\":429,\"error\":\"Too Many Requests\","
+                            + "\"message\":\"Rate limit exceeded. Try again later.\"}",
                     Instant.now().toString()
             );
             response.getWriter().write(body);
@@ -63,5 +80,37 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private Bucket createBucket() {
         Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
         return Bucket.builder().addLimit(limit).build();
+    }
+
+    private void evictExpiredEntries() {
+        long now = System.currentTimeMillis();
+        buckets.entrySet().removeIf(entry -> now - entry.getValue().getLastAccessMillis() > EXPIRATION_MILLIS);
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        scheduler.shutdownNow();
+    }
+
+    private static class TimestampedBucket {
+        private final Bucket bucket;
+        private volatile long lastAccessMillis;
+
+        TimestampedBucket(Bucket bucket) {
+            this.bucket = bucket;
+            this.lastAccessMillis = System.currentTimeMillis();
+        }
+
+        Bucket getBucket() {
+            return bucket;
+        }
+
+        long getLastAccessMillis() {
+            return lastAccessMillis;
+        }
+
+        void touch() {
+            this.lastAccessMillis = System.currentTimeMillis();
+        }
     }
 }
