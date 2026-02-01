@@ -44,6 +44,7 @@ public class AlbumService {
         Album saved = albumRepository.save(album);
 
         AlbumResponse response = AlbumResponse.fromEntity(saved);
+        messagingTemplate.convertAndSend("/topic/albums", response);
         return response;
     }
 
