@@ -94,6 +94,19 @@ class RegionServiceTest {
     }
 
     @Test
+    void synchronize_shouldDoNothingWhenRegionExistsWithSameName() {
+        Region existingRegion = new Region(1, "Sul", true);
+        RegionExternalDto externalDto = new RegionExternalDto(1, "Sul");
+        when(regionExternalClient.fetchRegions()).thenReturn(List.of(externalDto));
+        when(regionRepository.findByActiveTrue()).thenReturn(List.of(existingRegion));
+
+        regionService.synchronize();
+
+        assertThat(existingRegion.getActive()).isTrue();
+        verify(regionRepository, never()).save(any(Region.class));
+    }
+
+    @Test
     void synchronize_shouldThrowWhenApiFails() {
         when(regionExternalClient.fetchRegions()).thenThrow(new ExternalApiException("Failed to fetch regions from external API"));
 
