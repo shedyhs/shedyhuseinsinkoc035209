@@ -65,6 +65,7 @@ class AuthServiceTest {
     void refresh_shouldReturnNewAccessToken() {
         RefreshRequest request = new RefreshRequest("valid-refresh-token");
         when(jwtUtil.validateToken("valid-refresh-token")).thenReturn(true);
+        when(jwtUtil.isRefreshToken("valid-refresh-token")).thenReturn(true);
         when(jwtUtil.extractUsername("valid-refresh-token")).thenReturn("admin");
         when(jwtUtil.generateToken("admin")).thenReturn("new-access-token");
         when(jwtUtil.getExpiration()).thenReturn(3600000L);
@@ -83,5 +84,16 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.refresh(request))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessageContaining("Invalid refresh token");
+    }
+
+    @Test
+    void refresh_shouldThrowWhenTokenIsNotRefreshType() {
+        RefreshRequest request = new RefreshRequest("access-token-used-as-refresh");
+        when(jwtUtil.validateToken("access-token-used-as-refresh")).thenReturn(true);
+        when(jwtUtil.isRefreshToken("access-token-used-as-refresh")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.refresh(request))
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessageContaining("Token is not a refresh token");
     }
 }
