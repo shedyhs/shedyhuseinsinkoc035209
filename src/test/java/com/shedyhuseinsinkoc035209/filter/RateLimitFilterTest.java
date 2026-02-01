@@ -11,6 +11,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -30,6 +31,9 @@ class RateLimitFilterTest {
     @BeforeEach
     void setUp() {
         rateLimitFilter = new RateLimitFilter();
+        ReflectionTestUtils.setField(rateLimitFilter, "capacity", 10);
+        ReflectionTestUtils.setField(rateLimitFilter, "refillPeriodMinutes", 1L);
+        ReflectionTestUtils.setField(rateLimitFilter, "expirationMinutes", 2L);
         SecurityContextHolder.clearContext();
     }
 
