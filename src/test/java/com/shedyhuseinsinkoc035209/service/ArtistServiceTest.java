@@ -56,8 +56,8 @@ class ArtistServiceTest {
 
         ArtistResponse response = artistService.create(request);
 
-        assertThat(response.getName()).isEqualTo("Test Artist");
-        assertThat(response.getType()).isEqualTo(ArtistType.SOLO);
+        assertThat(response.name()).isEqualTo("Test Artist");
+        assertThat(response.type()).isEqualTo(ArtistType.SOLO);
         verify(artistRepository).save(any(Artist.class));
     }
 
@@ -67,8 +67,8 @@ class ArtistServiceTest {
 
         ArtistResponse response = artistService.findById(artistId);
 
-        assertThat(response.getId()).isEqualTo(artistId);
-        assertThat(response.getName()).isEqualTo("Test Artist");
+        assertThat(response.id()).isEqualTo(artistId);
+        assertThat(response.name()).isEqualTo("Test Artist");
     }
 
     @Test
@@ -90,7 +90,7 @@ class ArtistServiceTest {
         Page<ArtistResponse> response = artistService.findAll(pageable);
 
         assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0).getName()).isEqualTo("Test Artist");
+        assertThat(response.getContent().get(0).name()).isEqualTo("Test Artist");
     }
 
     @Test
