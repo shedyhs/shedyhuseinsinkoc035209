@@ -249,16 +249,16 @@ open target/site/jacoco/index.html
 
 ### Cobertura atual
 
-| Camada | Cobertura de Linhas |
-|--------|-------------------|
-| Services | 100% |
-| Entities | 100% |
-| Controllers | 100% |
-| DTOs | 100% |
-| Exceptions | 100% |
-| Filters | ~88% |
-| Util | ~97% |
-| **Total** | **~94%** |
+| Camada | Statements | Branches |
+|--------|-----------|----------|
+| Services | 100% | 100% |
+| Entities | 100% | 100% |
+| Filters | 100% | 100% |
+| Controllers | 100% | 100% |
+| DTOs | 100% | 100% |
+| Exceptions | 100% | 100% |
+| Util | ~97% | 100% |
+| **Total** | **~97%** | **~97%** |
 
 ### Arquivos de teste
 
@@ -292,7 +292,7 @@ open target/site/jacoco/index.html
 
 ### Requisitos Sênior
 - [x] Health Checks com Liveness e Readiness probes
-- [x] Testes unitários com cobertura de ~94%
+- [x] Testes unitários com cobertura de ~97% (entity, service e filter com 100%)
 - [x] WebSocket para notificar o front a cada novo álbum cadastrado
 - [x] Rate limit: até 10 requisições por minuto por usuário
 - [x] Endpoint de regionais com sincronização inteligente
