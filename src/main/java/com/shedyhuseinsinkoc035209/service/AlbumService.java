@@ -8,6 +8,8 @@ import com.shedyhuseinsinkoc035209.entity.ArtistType;
 import com.shedyhuseinsinkoc035209.exception.ResourceNotFoundException;
 import com.shedyhuseinsinkoc035209.repository.AlbumRepository;
 import com.shedyhuseinsinkoc035209.repository.ArtistRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +18,13 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class AlbumService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AlbumService.class);
 
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
@@ -36,16 +41,13 @@ public class AlbumService {
     public AlbumResponse create(AlbumRequest request) {
         Album album = new Album(request.getTitle(), request.getReleaseYear());
 
-        for (UUID artistId : request.getArtistIds()) {
-            Artist artist = artistRepository.findById(artistId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + artistId));
-            album.addArtist(artist);
-        }
+        addArtistsToAlbum(album, request.getArtistIds());
 
         Album saved = albumRepository.save(album);
 
         AlbumResponse response = AlbumResponse.fromEntity(saved);
         messagingTemplate.convertAndSend("/topic/albums", response);
+        LOG.info("Album '{}' created with {} artists", request.getTitle(), request.getArtistIds().size());
         return response;
     }
 
@@ -81,13 +83,10 @@ public class AlbumService {
         album.update(request.getTitle(), request.getReleaseYear());
         album.clearArtists();
 
-        for (UUID artistId : request.getArtistIds()) {
-            Artist artist = artistRepository.findById(artistId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + artistId));
-            album.addArtist(artist);
-        }
+        addArtistsToAlbum(album, request.getArtistIds());
 
         Album updated = albumRepository.save(album);
+        LOG.info("Album '{}' updated", id);
         return AlbumResponse.fromEntity(updated);
     }
 
@@ -98,5 +97,14 @@ public class AlbumService {
 
         album.clearArtists();
         albumRepository.delete(album);
+        LOG.info("Album '{}' deleted", id);
+    }
+
+    private void addArtistsToAlbum(Album album, Set<UUID> artistIds) {
+        for (UUID artistId : artistIds) {
+            Artist artist = artistRepository.findById(artistId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + artistId));
+            album.addArtist(artist);
+        }
     }
 }
