@@ -61,6 +61,22 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    void shouldNotFilter_swaggerHtmlPath() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServletPath("/swagger-ui.html");
+
+        assertThat(jwtAuthenticationFilter.shouldNotFilter(request)).isTrue();
+    }
+
+    @Test
+    void shouldNotFilter_apiDocsPath() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServletPath("/v3/api-docs/openapi.json");
+
+        assertThat(jwtAuthenticationFilter.shouldNotFilter(request)).isTrue();
+    }
+
+    @Test
     void shouldNotFilter_actuatorPaths() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setServletPath("/actuator/health");
