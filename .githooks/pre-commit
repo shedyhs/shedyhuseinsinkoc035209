@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+echo "========================================="
+echo " Pre-commit hook: validation & tests"
+echo "========================================="
+
+if command -v mvn &> /dev/null && java -version &> /dev/null; then
+    MVN="mvn"
+elif [ -f "./mvnw" ] && java -version &> /dev/null; then
+    MVN="./mvnw"
+else
+    MVN="docker run --rm -v $(pwd):/app -w /app maven:3.9.9-eclipse-temurin-17 mvn"
+fi
+
+echo ""
+echo "[1/2] Running Checkstyle formatting validation..."
+echo ""
+
+$MVN checkstyle:check -q
+
+echo "Checkstyle passed."
+
+echo ""
+echo "[2/2] Running unit tests..."
+echo ""
+
+$MVN test -q
+
+echo ""
+echo "========================================="
+echo " All checks passed. Committing..."
+echo "========================================="
